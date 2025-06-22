@@ -1,0 +1,42 @@
+import React, {useState} from "react";
+
+function App( ) {
+  const [cartShown, setCartShown] = useState(false);
+
+const showCartHandler = () => {
+   setCartShown(true);
+}
+
+const hideCartHandler = () => {
+  setCartShown(false);
+}
+
+return (
+<>
+{cartShown && <CartModal onClose = {hideCartHandler} /> }
+ <Header onShowCart = {showCartHandler} />
+</>
+)
+};
+
+export default App;
+
+
+import React from 'react';
+
+function Header({ onShowCart }) {
+
+ return (
+<header className="header">
+<h1>ReactMeals</h1>
+<button className="cart-button" onClick={onShowCart}>
+ Your Cart <span className="badge">3</span>
+</button>
+</header>
+ );
+}
+
+export  default Header;
+
+
+
