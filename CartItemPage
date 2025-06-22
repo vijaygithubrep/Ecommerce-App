@@ -1,0 +1,115 @@
+Header.js
+
+import React, { useContext } from 'react';
+import CartContext from './CartContext';
+
+
+function Header({ onShowCart }) {
+ const cartCtx = useContext(CartContext);
+ const totalItems = cartCtx.items.reduce((sum, item) => sum + item.amount, 0);
+
+ return (
+  <header className="header">
+   <h1>ReactMeals</h1>
+   <button className="cart-button" onClick={onShowCart}>
+    Your Cart <span className="badge">{totalItems}</span>
+   </button>
+  </header>
+ );
+}
+export default Header;
+
+
+
+MealIten.js
+
+import React, { useContext } from 'react';
+import MealItemForm from './MealItemForm';
+import CartContext from '.CartContext';
+
+function MealItem({ id, name, description, price }) {
+ const cartCtx = useContext(CartContext);
+
+ const addToCartHandler = (amount) => {
+  cartCtx.addItem({
+   id,
+   name,
+   amount,
+   price
+  });
+ };
+
+ return (
+  <li>
+   <div>
+    <h3>{name}</h3>
+    <p>{description}</p>
+    <span>${price}</span>
+   </div>
+   <MealItemForm onAddToCart={addToCartHandler} />
+  </li>
+ );
+}
+export default MealItem;
+
+
+
+CartContext.js
+import React, { useReducer } from 'react';
+
+const CartContext = React.createContext();
+
+const defaultCartState = {
+ items: [ ];
+ totalAmount: 0
+};
+
+
+const cartReducer = (state, action) => {
+ if (action.type === 'ADD_ITEM') {
+ const updatedTotal = state.totalAmount + action.item.price * action.item.amount;
+  const existingItemIndex = state.items.findIndex(item => item.id === action.item.id);
+  const existingItem = state.items[existingItemIndex];
+  let updatedItems;
+  if (existingItem) {
+   const updatedItem = {
+    existingItem,
+    amount: existingItem.amount + action.item.amount
+   };
+   updatedItems = [...state.items];
+   updatedItems[existingItemIndex] = updatedItem;
+  } else {
+   updatedItems = state.items.concat(action.item);
+  }
+
+  return {
+   items: updatedItems,
+   totalAmount: updatedTotal
+  };
+ }
+ return defaultCartState;
+};
+
+
+
+export const CartProvider = ({ children }) => {
+ const [cartState, dispatchCartAction] = useReducer(cartReducer, defaultCartState);
+
+ const addItemToCart = (item) => {
+  dispatchCartAction({ type: 'ADD_ITEM', item });
+ };
+
+ const cartContext = {
+  items: cartState.items,
+  totalAmount: cartState.totalAmount,
+  addItem: addItemToCart
+ };
+
+ return (
+  <CartContext.Provider value={cartContext}>
+   {children}
+  </CartContext.Provider>
+ );
+};
+
+export default CartContext;
