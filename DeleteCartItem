@@ -1,0 +1,115 @@
+CartContext.js
+import React from "react";
+
+const cartReducer = (state, action) => {
+ if (action.type === 'ADD_ITEM') {
+  const updatedTotal = state.totalAmount + action.item.price * action.item.amount;
+
+  const existingItemIndex = state.items.findIndex(item => item.id === action.item.id);
+  const existingItem = state.items[existingItemIndex];
+  let updatedItems;
+
+  if (existingItem) {
+   const updatedItem = {
+    ...existingItem,
+    amount: existingItem.amount + action.item.amount
+   };
+   updatedItems = [...state.items];
+   updatedItems[existingItemIndex] = updatedItem;
+  } else {
+   updatedItems = state.items.concat(action.item);
+  }
+
+  return {
+   items: updatedItems,
+   totalAmount: updatedTotal
+  };
+ }
+
+ if (action.type === 'REMOVE_ITEM') {
+  const existingItemIndex = state.items.findIndex(item => item.id === action.id);
+  const existingItem = state.items[existingItemIndex];
+
+  const updatedTotal = state.totalAmount - existingItem.price;
+  let updatedItems;
+
+  if (existingItem.amount === 1) {
+   updatedItems = state.items.filter(item => item.id !== action.id);
+  } else {
+const updatedItem = { ...existingItem, amount: existingItem.amount - 1 };
+updatedItems = [...state.items];
+updatedItems[existingItemIndex] = updatedItem;
+  }
+
+  return {
+   items: updatedItems,
+   totalAmount: updatedTotal
+  };
+ }
+
+ return defaultCartState;
+
+
+
+RemoveItem.js
+const removeItemFromCart = (id) => {
+ dispatchCartAction({ type: 'REMOVE_ITEM', id });
+};
+
+const cartContext = {
+ items: cartState.items,
+ totalAmount: cartState.totalAmount,
+ addItem: addItemToCart,
+ removeItem: removeItemFromCart
+};
+
+
+
+import React, { useContext } from 'react';
+import ReactDOM from 'react-dom';
+import CartContext from './CartContext';
+
+const Cart = ({ onClose }) => {
+ const cartCtx = useContext(CartContext);
+ const totalAmount = `$${cartCtx.totalAmount}`;
+ const hasItems = cartCtx.items.length > 0;
+
+
+ return ReactDOM.createPortal(
+  <div className="modal">
+   <ul className="cart-items">
+    {cartCtx.items.map(item => (
+     <li key={item.id} className="cart-item">
+      <div>
+       <h3>{item.name}</h3>
+       <div className="summary">
+        <span>${item.price.toFixed(2)}</span>
+        <span className="amount">x {item.amount}</span>
+       </div>
+      </div>
+
+      <div className="actions">
+       <button onClick={() => cartCtx.removeItem(item.id)}>-</button>
+       <button onClick={() => cartCtx.addItem({ ...item, amount: 1 })}>+</button>
+      </div>
+     </li>
+    ))}
+   </ul>
+
+   <div className="total">
+    <span>Total Amount</span>
+    <span>{totalAmount}</span>
+   </div>
+
+   <div className="actions">
+    <button className="button--alt" onClick={onClose}>Close</button>
+    {hasItems && <button className="button">Order</button>}
+   </div>
+  </div>
+  document.getElementById('overlays')
+ );
+};
+
+export default Cart;
+};
+
